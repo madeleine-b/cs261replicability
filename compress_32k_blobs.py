@@ -15,7 +15,7 @@ print("There are", len(all_files), "files larger than 32 KB")
 
 result_dict = {}
 COMPRESSION_RATIO_TOL = 0.01
-for i in np.arange(0.0, 1.1, COMPRESSION_RATIO_TOL):
+for i in np.arange(0.0, 1.01, COMPRESSION_RATIO_TOL):
 	result_dict[float(np.round(i, 2))] = []
 
 for i in range(SAMPLE_SIZE):
