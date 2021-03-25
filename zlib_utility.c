@@ -27,8 +27,8 @@ static alloc_func zalloc = myalloc;
 static free_func zfree = myfree;
 
 // Level 1 for zlib prioritizing speed
-// Level 0 (or whatever) for Huffman coding only
-long get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level) {
+// Level 0 for Huffman coding only
+uLong get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level) {
     int err;
     uLong comprLen;
 
@@ -39,7 +39,7 @@ long get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level
         CHECK_ERR(err, "compress2");
         free(compr);
         return comprLen;
-    } else {
+    } else if (level == 0) {
     	z_stream c_stream; /* compression stream */
         c_stream.zalloc = zalloc;
         c_stream.zfree = zfree;
@@ -66,21 +66,32 @@ long get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level
         CHECK_ERR(err, "deflateEnd");
         free(compr);
         return comprLen;
+    } else {
+        return 0;
     }
 }
 
 
 int main (int argc, char* argv[]) {
-    if (argc != 4) {
-        printf("Usage is: [IN_FILE] [START_BYTE] [END_BYTE]\n");
+    if (argc != 5) {
+        printf("Usage is: [IN_FILE] [LEVEL] [START_BYTE] [END_BYTE]\n");
         return 0;
     }
-
-    long start_byte = strtol(argv[2], NULL, 10);
-    long end_byte = strtol(argv[3], NULL, 10);
+    // 0-indexed bytes
+    long start_byte = strtol(argv[3], NULL, 10);
+    long end_byte = strtol(argv[4], NULL, 10);
+    int level = strtol(argv[2], NULL, 10);
 
     if (end_byte < start_byte) {
         printf("END_BYTE must be after START_BYTE\n");
+        return 0;
+    } else if (end_byte < 0 || start_byte < 0) {
+        printf("END_BYTE and START_BYTE must be nonnegative\n");
+        return 0;
+    }
+
+    if (level != 0 && level != 1) {
+        printf("Level must be 0 or 1\n");
         return 0;
     }
 
@@ -91,18 +102,11 @@ int main (int argc, char* argv[]) {
     fileptr = fopen(argv[1], "rb");  // Open the file in binary mode
     fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
     filelen = ftell(fileptr);             // Get the current byte offset in the file
-    if (end_byte > filelen) {
+    if (end_byte >= filelen) {
         printf("END_BYTE must be less than the number of bytes in the file\n");
         return 0;
     }
     rewind(fileptr);                      // Jump back to the beginning of the file
-
-    
-
-
-    end_byte = filelen - 1;
-
-
 
     long num_bytes = end_byte - start_byte + 1;
     uncompr = (Byte *)malloc(num_bytes * sizeof(Byte)); // Enough memory for the chunk
@@ -110,7 +114,10 @@ int main (int argc, char* argv[]) {
     size_t num_read = fread(uncompr, 1, num_bytes, fileptr); // Read in the chunk
     fclose(fileptr); // Close the file
 
-    printf("%lu is compressed size\n", get_num_bytes_in_compressed_data(uncompr, num_bytes, 0));
+    uLong compressedLen = get_num_bytes_in_compressed_data(uncompr, num_bytes, level);
+    double compressionRatio = (double)compressedLen / num_bytes;
+
+    printf("%lf\n", compressionRatio);
 
     free(uncompr);
     return 0;
