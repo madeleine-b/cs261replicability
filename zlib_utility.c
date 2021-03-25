@@ -1,6 +1,7 @@
 #include "zlib.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
@@ -31,15 +32,20 @@ static free_func zfree = myfree;
 uLong get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level) {
     int err;
     uLong comprLen;
+    struct timeval tic, toc;
 
     if (level == 1) {
         comprLen = compressBound(uncomprLen);
         Byte *compr = (Byte *)calloc(comprLen * sizeof(Byte), 1); 
+        gettimeofday(&tic, NULL);
     	err = compress2(compr, &comprLen, uncompr, uncomprLen, Z_BEST_SPEED);
+        gettimeofday(&toc, NULL);
         CHECK_ERR(err, "compress2");
         free(compr);
+        printf("%lu us\n", (toc.tv_sec - tic.tv_sec) * 1000000 + toc.tv_usec - tic.tv_usec); 
         return comprLen;
     } else if (level == 0) {
+        gettimeofday(&tic, NULL);
     	z_stream c_stream; /* compression stream */
         c_stream.zalloc = zalloc;
         c_stream.zfree = zfree;
@@ -63,8 +69,10 @@ uLong get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int leve
         }
         comprLen = c_stream.total_out;
         err = deflateEnd(&c_stream);
+        gettimeofday(&toc, NULL);
         CHECK_ERR(err, "deflateEnd");
         free(compr);
+        printf("%lu us\n", (toc.tv_sec - tic.tv_sec) * 1000000 + toc.tv_usec - tic.tv_usec); 
         return comprLen;
     } else {
         return 0;
