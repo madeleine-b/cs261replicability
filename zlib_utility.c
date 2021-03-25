@@ -37,24 +37,7 @@ long get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level
         Byte *compr = (Byte *)calloc(comprLen * sizeof(Byte), 1); 
     	err = compress2(compr, &comprLen, uncompr, uncomprLen, Z_BEST_SPEED);
         CHECK_ERR(err, "compress2");
-
-        /* Byte * uncompr2 = (Byte *)calloc(uncomprLen * sizeof(Byte) + 10, 1); 
-        uLong uncomprLen2 = uncomprLen + 10;
-        err = uncompress(uncompr2, &uncomprLen2, compr, comprLen);
-        CHECK_ERR(err, "uncompress");
-        if (uncomprLen2 != uncomprLen) {
-            printf("lengths diff\n");
-        } else {
-            for (int i = 0; i < uncomprLen2; ++i) {
-                if (uncompr[i] != uncompr2[i]) {
-                    printf("diff at byte %d\n", i);
-                }
-            }
-            printf("success\n");
-        }
-        free(uncompr2); */
         free(compr);
-
         return comprLen;
     } else {
     	z_stream c_stream; /* compression stream */
@@ -78,42 +61,10 @@ long get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int level
             fprintf(stderr, "deflate should report Z_STREAM_END\n");
             exit(1);
         }
-
         comprLen = c_stream.total_out;
-
-        /*Byte *uncompr2 = (Byte *)calloc(uncomprLen * sizeof(Byte) + 10, 1); 
-        uLong uncomprLen2 = uncomprLen + 10;
-        z_stream d_stream;
-        d_stream.zalloc = zalloc;
-        d_stream.zfree = zfree;
-        d_stream.opaque = (voidpf)0;
-        d_stream.next_in  = compr;
-        d_stream.avail_in = (uInt)comprLen;
-        err = inflateInit(&d_stream);
-        CHECK_ERR(err, "inflateInit");
-        d_stream.next_out = uncompr2;
-        d_stream.avail_out = (uInt)uncomprLen2;
-        err = inflate(&d_stream, Z_FINISH);
-        if (err != Z_STREAM_END) {
-            printf("bad deflate\n");
-        }
-        
-        if (d_stream.total_out != uncomprLen) {
-            printf("mismatch len\n");
-        } else {
-            for (int i = 0; i < uncomprLen; i++) {
-                if (uncompr[i] != uncompr2[i]) {
-                    printf("mismatch at byte %d\n", i);
-                    break;
-                }
-            }
-            printf("success\n");
-        }free(uncompr2);*/
-
         err = deflateEnd(&c_stream);
         CHECK_ERR(err, "deflateEnd");
         free(compr);
-        
         return comprLen;
     }
 }
