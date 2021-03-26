@@ -7,7 +7,7 @@ import numpy as np
 
 zlib_level = 1
 BYTES_IN_32KB = 1024 * 32
-SAMPLE_SIZE = 2
+SAMPLE_SIZE = 50000
 
 all_files = [f for f in glob.iglob("data/" + '**/**', recursive=True) if os.stat(f).st_size > BYTES_IN_32KB]
 print("There are", len(all_files), "files larger than 32 KB")
@@ -18,8 +18,11 @@ COMPRESSION_RATIO_TOL = 0.01
 for i in np.arange(0.0, 1.01, COMPRESSION_RATIO_TOL):
 	result_dict[float(np.round(i, 2))] = []
 
-for i in range(SAMPLE_SIZE):
-	file_name = random.choice(all_files)
+# "old" is generated with the commented-out sampling method
+for file_name in random.sample(all_files, k=SAMPLE_SIZE):
+#for i in range(SAMPLE_SIZE):
+#	file_name = random.choice(all_files)
+
 	file_bytes = os.stat(file_name).st_size
 	random_start_offset = random.choice(range(file_bytes // BYTES_IN_32KB))
 	results = subprocess.run(["./zlib_utility", file_name, str(zlib_level), 
