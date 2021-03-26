@@ -51,7 +51,7 @@ uLong get_num_bytes_in_compressed_data(Byte *uncompr, uLong uncomprLen, int leve
         c_stream.zfree = zfree;
         c_stream.opaque = (voidpf)0;
 
-        err = deflateInit2(&c_stream, Z_NO_COMPRESSION, Z_DEFLATED, 15, 8, Z_HUFFMAN_ONLY);
+        err = deflateInit2(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15, 8, Z_HUFFMAN_ONLY);
     	CHECK_ERR(err, "deflateInit2");
 
         comprLen  = deflateBound(&c_stream, uncomprLen);
