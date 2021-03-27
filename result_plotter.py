@@ -75,6 +75,9 @@ level_0_x, level_0_y = list(zip(*level_0_lists))
 level_1_yerr = [np.std(ratios) for ratios in map(lambda x: x[1], level_1_y_raw)]
 level_0_yerr = [np.std(ratios) for ratios in map(lambda x: x[1], level_0_y_raw)]
 
+#a=list(zip(level_1_x, map(lambda x: len(x[1]), level_1_y_raw)))
+#print([str(a[i]) + "-->" + str(level_1_yerr[i]) for i in range(len(a))])
+
 plt.errorbar(level_1_x, level_1_y, yerr=level_1_yerr, marker='D', color='#02ccff', label='Zlib level 1 compression')
 plt.errorbar(level_0_x, level_0_y, yerr=level_0_yerr, marker='^', color='#008001', label='Huffman compression')
 
