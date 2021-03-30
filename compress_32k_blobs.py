@@ -26,7 +26,7 @@ for file_name in random.sample(all_files, k=SAMPLE_SIZE):
 	file_bytes = os.stat(file_name).st_size
 	random_start_offset = random.choice(range(file_bytes // BYTES_IN_32KB))
 	results = subprocess.run(["./zlib_utility", file_name, str(zlib_level), 
-		 					 str(random_start_offset), str(-1 + random_start_offset + BYTES_IN_32KB)], 
+		 					 str(BYTES_IN_32KB * random_start_offset), str(-1 + BYTES_IN_32KB * random_start_offset + BYTES_IN_32KB)], 
 						 	 check=True, capture_output=True).stdout.split()
 	us_duration = int(results[0])
 	ratio = float((np.round(float(results[2]), 2)))
